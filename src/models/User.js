@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     },
 });
 
-//dire a doc after saving a doc
+//fire a doc after saving a doc
 userSchema.post('save', function(doc, next) {
     console.log('the user was created and saved');
     //you need to call the next functions
@@ -33,6 +33,19 @@ userSchema.pre('save', async function(next) {
     // console.log('the user about to be created and saved', this.password, );
     next();
 })
+
+//static model to login user
+userSchema.statics.login = async function(email, password) {
+    const user = await this.findOne({ email });
+    if (user) {
+        const auth = await bcrypt.compare(password, user.password);
+        if (auth) {
+            return user;
+        }
+        throw Error('incorrect password');
+    }
+    throw Error('incorrect email');
+}
 
 const User = mongoose.model('user', userSchema);
 
